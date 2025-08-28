@@ -2,10 +2,13 @@ import React, { useState } from 'react'
 import Button from './ui/Button'
 import Input from './ui/Input'
 import { createExpense, EXPENSE_CATEGORIES, PAYMENT_METHODS } from '../services/expenseService'
+import DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
+import { toStorageDateString } from '../utils/date'
 
 const ExpenseCreateModal = ({ isOpen, onClose, onCreated }) => {
   const [form, setForm] = useState({
-    date: '',
+    date: new Date(),
     category: '',
     amount: '',
     paymentMethod: '',
@@ -22,11 +25,18 @@ const ExpenseCreateModal = ({ isOpen, onClose, onCreated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
+    if (!form.category || !form.paymentMethod || !form.amount) {
+      alert('카테고리/결제수단/금액을 입력해주세요.')
+      return
+    }
     setSubmitting(true)
     try {
       const payload = {
-        ...form,
+        date: toStorageDateString(form.date),
+        category: form.category,
         amount: Number(form.amount),
+        paymentMethod: form.paymentMethod,
+        note: form.note,
       }
       await createExpense(payload)
       onCreated?.()
@@ -51,7 +61,14 @@ const ExpenseCreateModal = ({ isOpen, onClose, onCreated }) => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div>
               <label className="block text-sm text-gray-700 mb-1">날짜/시간</label>
-              <input type="datetime-local" name="date" value={form.date} onChange={handleChange} required className="input-field w-full" />
+              <DatePicker
+                selected={form.date}
+                onChange={(d) => setForm((prev) => ({ ...prev, date: d || new Date() }))}
+                showTimeSelect
+                timeIntervals={10}
+                dateFormat="yyyy-MM-dd HH:mm"
+                className="input-field w-full"
+              />
             </div>
             <div>
               <label className="block text-sm text-gray-700 mb-1">금액(¥)</label>

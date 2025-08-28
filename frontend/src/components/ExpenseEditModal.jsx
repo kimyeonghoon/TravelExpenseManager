@@ -1,6 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import Button from './ui/Button'
 import { updateExpense, EXPENSE_CATEGORIES, PAYMENT_METHODS } from '../services/expenseService'
+import DatePicker from 'react-datepicker'
+import 'react-datepicker/dist/react-datepicker.css'
+import { toStorageDateString } from '../utils/date'
 
 const ExpenseEditModal = ({ isOpen, onClose, expense, onUpdated }) => {
   const [form, setForm] = useState({

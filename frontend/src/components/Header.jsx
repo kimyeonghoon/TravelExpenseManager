@@ -24,21 +24,22 @@ const Header = () => {
         <div className="flex justify-between items-center h-16">
           {/* 로고 및 제목 */}
           <div className="flex items-center">
-            <h1 className="text-2xl font-bold text-primary-600">
-              🇯🇵 일본 여행 지출 관리
+            <h1 className="text-lg sm:text-xl md:text-2xl font-bold text-primary-600">
+              🇯🇵 <span className="hidden sm:inline">일본 여행 지출 관리</span>
+              <span className="sm:hidden">지출 관리</span>
             </h1>
           </div>
 
           {/* 우측 상단 로그인/사용자 정보 */}
-          <div className="flex items-center space-x-4">
+          <div className="flex items-center space-x-2 sm:space-x-4">
             {isLoggedIn ? (
-              <div className="flex items-center space-x-3">
-                <span className="text-gray-700">
+              <div className="flex items-center space-x-2 sm:space-x-3">
+                <span className="hidden sm:block text-gray-700 text-sm">
                   안녕하세요, {userInfo?.nickname || '사용자'}님!
                 </span>
                 <button
                   onClick={handleLogout}
-                  className="btn-secondary text-sm"
+                  className="btn-secondary text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
                 >
                   로그아웃
                 </button>
@@ -46,7 +47,7 @@ const Header = () => {
             ) : (
               <button
                 onClick={() => setIsLoginModalOpen(true)}
-                className="btn-primary text-sm"
+                className="btn-primary text-xs sm:text-sm px-2 sm:px-3 py-1.5 sm:py-2"
               >
                 로그인
               </button>

@@ -3,6 +3,8 @@ import { useExpenses } from '../hooks/useExpenses'
 import LoadingSpinner from './ui/LoadingSpinner'
 import ErrorMessage from './ui/ErrorMessage'
 import { updateExpense, deleteExpense } from '../services/expenseService'
+import ExpenseEditModal from './ExpenseEditModal'
+import { useState } from 'react'
 
 const ExpenseTable = ({ type = 'public', refreshKey = 0 }) => {
   const { expenses, loading, error, refreshExpenses } = useExpenses(type, refreshKey)
@@ -32,6 +34,8 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0 }) => {
       </div>
     )
   }
+
+  const [editTarget, setEditTarget] = useState(null)
 
   const handleQuickEditNote = async (expense) => {
     const next = window.prompt('비고를 수정하세요', expense.note || '')
@@ -80,6 +84,7 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0 }) => {
               {type === 'personal' && (
                 <div className="flex flex-col items-end space-y-2 ml-3">
                   <button onClick={() => handleQuickEditNote(expense)} className="text-xs text-primary-600 hover:underline">메모 수정</button>
+                  <button onClick={() => setEditTarget(expense)} className="text-xs text-primary-600 hover:underline">상세 수정</button>
                   <button onClick={() => handleDelete(expense)} className="text-xs text-red-600 hover:underline">삭제</button>
                 </div>
               )}
@@ -137,7 +142,8 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0 }) => {
                 </td>
                 {type === 'personal' && (
                   <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
-                    <button onClick={() => handleQuickEditNote(expense)} className="text-primary-600 hover:underline mr-3">수정</button>
+                    <button onClick={() => handleQuickEditNote(expense)} className="text-primary-600 hover:underline mr-3">메모 수정</button>
+                    <button onClick={() => setEditTarget(expense)} className="text-primary-600 hover:underline mr-3">상세 수정</button>
                     <button onClick={() => handleDelete(expense)} className="text-red-600 hover:underline">삭제</button>
                   </td>
                 )}
@@ -146,6 +152,15 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0 }) => {
           </tbody>
         </table>
       </div>
+
+      {type === 'personal' && (
+        <ExpenseEditModal 
+          isOpen={!!editTarget} 
+          onClose={() => setEditTarget(null)} 
+          expense={editTarget} 
+          onUpdated={refreshExpenses}
+        />
+      )}
       
       {/* 데이터 새로고침 버튼 */}
       <div className="mt-4 flex justify-center">

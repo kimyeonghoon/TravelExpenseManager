@@ -2,6 +2,7 @@ import React from 'react'
 import { useExpenses } from '../hooks/useExpenses'
 import LoadingSpinner from './ui/LoadingSpinner'
 import ErrorMessage from './ui/ErrorMessage'
+import { updateExpense, deleteExpense } from '../services/expenseService'
 
 const ExpenseTable = ({ type = 'public', refreshKey = 0 }) => {
   const { expenses, loading, error, refreshExpenses } = useExpenses(type, refreshKey)
@@ -32,6 +33,28 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0 }) => {
     )
   }
 
+  const handleQuickEditNote = async (expense) => {
+    const next = window.prompt('비고를 수정하세요', expense.note || '')
+    if (next === null) return
+    try {
+      await updateExpense(expense.id, { note: next })
+      await refreshExpenses()
+    } catch (e) {
+      alert('수정 실패: ' + (e.message || '알 수 없는 오류'))
+    }
+  }
+
+  const handleDelete = async (expense) => {
+    const ok = window.confirm('이 지출을 삭제하시겠습니까? (논리 삭제)')
+    if (!ok) return
+    try {
+      await deleteExpense(expense.id)
+      await refreshExpenses()
+    } catch (e) {
+      alert('삭제 실패: ' + (e.message || '알 수 없는 오류'))
+    }
+  }
+
   return (
     <div className="space-y-4">
       {/* 모바일용 카드 뷰 */}
@@ -54,6 +77,12 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0 }) => {
                   <p className="text-xs text-gray-500 mt-1">{expense.note}</p>
                 )}
               </div>
+              {type === 'personal' && (
+                <div className="flex flex-col items-end space-y-2 ml-3">
+                  <button onClick={() => handleQuickEditNote(expense)} className="text-xs text-primary-600 hover:underline">메모 수정</button>
+                  <button onClick={() => handleDelete(expense)} className="text-xs text-red-600 hover:underline">삭제</button>
+                </div>
+              )}
             </div>
           </div>
         ))}
@@ -79,6 +108,11 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0 }) => {
               <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                 비고
               </th>
+              {type === 'personal' && (
+                <th className="px-6 py-3 text-right text-xs font-medium text-gray-500 uppercase tracking-wider">
+                  액션
+                </th>
+              )}
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
@@ -101,6 +135,12 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0 }) => {
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
                   {expense.note}
                 </td>
+                {type === 'personal' && (
+                  <td className="px-6 py-4 whitespace-nowrap text-sm text-right">
+                    <button onClick={() => handleQuickEditNote(expense)} className="text-primary-600 hover:underline mr-3">수정</button>
+                    <button onClick={() => handleDelete(expense)} className="text-red-600 hover:underline">삭제</button>
+                  </td>
+                )}
               </tr>
             ))}
           </tbody>

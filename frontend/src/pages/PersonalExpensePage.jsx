@@ -28,6 +28,7 @@ const PersonalExpensePage = () => {
   }
 
   return (
+    <>
     <div className="space-y-8">
       {/* 페이지 헤더 */}
       <div className="text-center">
@@ -119,6 +120,7 @@ const PersonalExpensePage = () => {
       </div>
     </div>
     <ExpenseCreateModal isOpen={openCreate} onClose={() => setOpenCreate(false)} onCreated={handleCreated} />
+    </>
   )
 }
 

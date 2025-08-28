@@ -6,10 +6,11 @@ import { updateExpense, deleteExpense } from '../services/expenseService'
 import ExpenseEditModal from './ExpenseEditModal'
 import { useState } from 'react'
 
-const ExpenseTable = ({ type = 'public', refreshKey = 0, filters }) => {
+const ExpenseTable = ({ type = 'public', refreshKey = 0, filters, pageSize = 10, initialPage = 1, onPageChange }) => {
   const { expenses, loading, error, refreshExpenses } = useExpenses(type, refreshKey)
   // 모든 훅은 조건문/조기 반환보다 먼저 호출되어야 함
   const [editTarget, setEditTarget] = useState(null)
+  const [page, setPage] = useState(initialPage)
 
   const handleQuickEditNote = async (expense) => {
     const next = window.prompt('비고를 수정하세요', expense.note || '')
@@ -84,6 +85,18 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0, filters }) => {
   }
 
   const shown = applyFilters(expenses || [])
+  const total = shown.length
+  const totalPages = Math.max(1, Math.ceil(total / Math.max(1, Number(pageSize))))
+  const currentPage = Math.min(page, totalPages)
+  const start = (currentPage - 1) * pageSize
+  const end = start + pageSize
+  const pageItems = shown.slice(start, end)
+
+  const setPageSafe = (p) => {
+    const np = Math.min(Math.max(1, p), totalPages)
+    setPage(np)
+    onPageChange?.(np)
+  }
 
   // 데이터가 없는 경우
   if (!shown || shown.length === 0) {
@@ -99,7 +112,7 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0, filters }) => {
     <div className="space-y-4">
       {/* 모바일용 카드 뷰 */}
       <div className="block sm:hidden space-y-3">
-        {shown.map((expense) => (
+        {pageItems.map((expense) => (
           <div key={expense.id} className="bg-white border border-gray-200 rounded-lg p-4 space-y-2">
             <div className="flex justify-between items-start">
               <div className="flex-1">
@@ -157,7 +170,7 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0, filters }) => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {shown.map((expense) => (
+            {pageItems.map((expense) => (
               <tr key={expense.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {expense.date}
@@ -198,6 +211,20 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0, filters }) => {
         />
       )}
       
+      {/* 페이지네이션 */}
+      <div className="flex items-center justify-between mt-2">
+        <div className="text-sm text-gray-600">
+          {total}건 중 {(start + 1)}-{Math.min(end, total)} 표시
+        </div>
+        <div className="inline-flex items-center space-x-1">
+          <button onClick={() => setPageSafe(1)} disabled={currentPage === 1} className="px-2 py-1 text-sm border rounded disabled:opacity-40">≪</button>
+          <button onClick={() => setPageSafe(currentPage - 1)} disabled={currentPage === 1} className="px-2 py-1 text-sm border rounded disabled:opacity-40">이전</button>
+          <span className="px-2 text-sm">{currentPage} / {totalPages}</span>
+          <button onClick={() => setPageSafe(currentPage + 1)} disabled={currentPage === totalPages} className="px-2 py-1 text-sm border rounded disabled:opacity-40">다음</button>
+          <button onClick={() => setPageSafe(totalPages)} disabled={currentPage === totalPages} className="px-2 py-1 text-sm border rounded disabled:opacity-40">≫</button>
+        </div>
+      </div>
+
       {/* 데이터 새로고침 버튼 */}
       <div className="mt-4 flex justify-center">
         <button

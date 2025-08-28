@@ -20,6 +20,7 @@ const PersonalExpensePage = () => {
     sortKey: 'date',
     sortDir: 'asc',
   })
+  const [pageSize, setPageSize] = useState(10)
   const handleCreated = () => {
     setRefreshKey((k) => k + 1)
   }
@@ -129,12 +130,19 @@ const PersonalExpensePage = () => {
               <option value="desc">내림차순</option>
             </select>
           </div>
-          <div className="flex space-x-2">
+          <div className="flex items-center space-x-2">
+            <label className="text-sm text-gray-600">페이지 크기:</label>
+            <select className="input-field" value={pageSize} onChange={(e) => setPageSize(Number(e.target.value))}>
+              <option value={5}>5</option>
+              <option value={10}>10</option>
+              <option value={20}>20</option>
+              <option value={50}>50</option>
+            </select>
             <Button size="sm" variant="secondary" onClick={resetFilters}>필터 초기화</Button>
           </div>
         </div>
         
-        <ExpenseTable type="personal" refreshKey={refreshKey} filters={filters} />
+        <ExpenseTable type="personal" refreshKey={refreshKey} filters={filters} pageSize={pageSize} />
       </div>
 
       {/* 공개 설정 */}

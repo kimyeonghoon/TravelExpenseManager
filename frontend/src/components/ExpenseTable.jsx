@@ -1,39 +1,42 @@
 import React from 'react'
+import { useExpenses } from '../hooks/useExpenses'
+import LoadingSpinner from './ui/LoadingSpinner'
+import ErrorMessage from './ui/ErrorMessage'
 
-const ExpenseTable = () => {
-  // 테스트용 더미 데이터 (오래된 순으로 정렬)
-  const dummyExpenses = [
-    {
-      id: 3,
-      date: '2024-01-15 10:00',
-      category: '교통',
-      amount: 500,
-      paymentMethod: '현금',
-      note: '지하철 요금'
-    },
-    {
-      id: 2,
-      date: '2024-01-15 12:00',
-      category: '식비',
-      amount: 3000,
-      paymentMethod: '현금',
-      note: '라멘점 점심'
-    },
-    {
-      id: 1,
-      date: '2024-01-15 14:30',
-      category: '숙박',
-      amount: 15000,
-      paymentMethod: '신용카드',
-      note: '도쿄 호텔 1박'
-    }
-  ]
+const ExpenseTable = ({ type = 'public' }) => {
+  const { expenses, loading, error, refreshExpenses } = useExpenses(type)
+
+  // 로딩 상태
+  if (loading) {
+    return <LoadingSpinner size="lg" text="지출 내역을 불러오는 중..." />
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <ErrorMessage 
+        error={error} 
+        onRetry={refreshExpenses}
+        title="지출 내역을 불러올 수 없습니다"
+      />
+    )
+  }
+
+  // 데이터가 없는 경우
+  if (!expenses || expenses.length === 0) {
+    return (
+      <div className="text-center py-8">
+        <div className="text-gray-400 text-lg mb-2">📝</div>
+        <p className="text-gray-500">등록된 지출 내역이 없습니다.</p>
+      </div>
+    )
+  }
 
   return (
     <div className="space-y-4">
       {/* 모바일용 카드 뷰 */}
       <div className="block sm:hidden space-y-3">
-        {dummyExpenses.map((expense) => (
+        {expenses.map((expense) => (
           <div key={expense.id} className="bg-white border border-gray-200 rounded-lg p-4 space-y-2">
             <div className="flex justify-between items-start">
               <div className="flex-1">
@@ -79,7 +82,7 @@ const ExpenseTable = () => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {dummyExpenses.map((expense) => (
+            {expenses.map((expense) => (
               <tr key={expense.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {expense.date}
@@ -104,13 +107,17 @@ const ExpenseTable = () => {
         </table>
       </div>
       
-      {/* 테스트용 안내 메시지 */}
-      <div className="mt-4 p-3 sm:p-4 bg-blue-50 border border-blue-200 rounded-lg">
-        <p className="text-xs sm:text-sm text-blue-800">
-          🧪 <strong>테스트 모드</strong> - 현재 더미 데이터로 표시 중입니다.
-          <span className="hidden sm:inline"> Phase 2에서 실제 API 연동이 구현될 예정입니다.</span>
-          <span className="sm:hidden"> Phase 2에서 API 연동 예정.</span>
-        </p>
+      {/* 데이터 새로고침 버튼 */}
+      <div className="mt-4 flex justify-center">
+        <button
+          onClick={refreshExpenses}
+          className="text-sm text-primary-600 hover:text-primary-700 font-medium flex items-center space-x-1"
+        >
+          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+          </svg>
+          <span>새로고침</span>
+        </button>
       </div>
     </div>
   )

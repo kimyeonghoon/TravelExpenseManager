@@ -8,6 +8,30 @@ import { useState } from 'react'
 
 const ExpenseTable = ({ type = 'public', refreshKey = 0 }) => {
   const { expenses, loading, error, refreshExpenses } = useExpenses(type, refreshKey)
+  // 모든 훅은 조건문/조기 반환보다 먼저 호출되어야 함
+  const [editTarget, setEditTarget] = useState(null)
+
+  const handleQuickEditNote = async (expense) => {
+    const next = window.prompt('비고를 수정하세요', expense.note || '')
+    if (next === null) return
+    try {
+      await updateExpense(expense.id, { note: next })
+      await refreshExpenses()
+    } catch (e) {
+      alert('수정 실패: ' + (e.message || '알 수 없는 오류'))
+    }
+  }
+
+  const handleDelete = async (expense) => {
+    const ok = window.confirm('이 지출을 삭제하시겠습니까? (논리 삭제)')
+    if (!ok) return
+    try {
+      await deleteExpense(expense.id)
+      await refreshExpenses()
+    } catch (e) {
+      alert('삭제 실패: ' + (e.message || '알 수 없는 오류'))
+    }
+  }
 
   // 로딩 상태
   if (loading) {
@@ -33,30 +57,6 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0 }) => {
         <p className="text-gray-500">등록된 지출 내역이 없습니다.</p>
       </div>
     )
-  }
-
-  const [editTarget, setEditTarget] = useState(null)
-
-  const handleQuickEditNote = async (expense) => {
-    const next = window.prompt('비고를 수정하세요', expense.note || '')
-    if (next === null) return
-    try {
-      await updateExpense(expense.id, { note: next })
-      await refreshExpenses()
-    } catch (e) {
-      alert('수정 실패: ' + (e.message || '알 수 없는 오류'))
-    }
-  }
-
-  const handleDelete = async (expense) => {
-    const ok = window.confirm('이 지출을 삭제하시겠습니까? (논리 삭제)')
-    if (!ok) return
-    try {
-      await deleteExpense(expense.id)
-      await refreshExpenses()
-    } catch (e) {
-      alert('삭제 실패: ' + (e.message || '알 수 없는 오류'))
-    }
   }
 
   return (

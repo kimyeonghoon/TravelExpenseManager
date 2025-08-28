@@ -1,15 +1,15 @@
 import React from 'react'
 
 const ExpenseTable = () => {
-  // 테스트용 더미 데이터
+  // 테스트용 더미 데이터 (오래된 순으로 정렬)
   const dummyExpenses = [
     {
-      id: 1,
-      date: '2024-01-15 14:30',
-      category: '숙박',
-      amount: 15000,
-      paymentMethod: '신용카드',
-      note: '도쿄 호텔 1박'
+      id: 3,
+      date: '2024-01-15 10:00',
+      category: '교통',
+      amount: 500,
+      paymentMethod: '현금',
+      note: '지하철 요금'
     },
     {
       id: 2,
@@ -20,12 +20,12 @@ const ExpenseTable = () => {
       note: '라멘점 점심'
     },
     {
-      id: 3,
-      date: '2024-01-15 10:00',
-      category: '교통',
-      amount: 500,
-      paymentMethod: '현금',
-      note: '지하철 요금'
+      id: 1,
+      date: '2024-01-15 14:30',
+      category: '숙박',
+      amount: 15000,
+      paymentMethod: '신용카드',
+      note: '도쿄 호텔 1박'
     }
   ]
 

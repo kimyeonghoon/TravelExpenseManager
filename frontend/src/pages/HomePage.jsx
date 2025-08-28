@@ -22,7 +22,7 @@ const HomePage = () => {
             공개 지출 내역
           </h3>
           <div className="text-sm text-gray-500">
-            최신 순으로 정렬됨
+            오래된 순으로 정렬됨
           </div>
         </div>
         

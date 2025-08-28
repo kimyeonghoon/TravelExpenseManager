@@ -4,6 +4,7 @@ import clsx from 'clsx'
 const Input = ({ 
   label,
   error,
+  hint,
   className = '',
   ...props 
 }) => {
@@ -28,9 +29,11 @@ const Input = ({
         className={inputClasses}
         {...props}
       />
-      {error && (
+      {error ? (
         <p className="text-sm text-red-600">{error}</p>
-      )}
+      ) : hint ? (
+        <p className="text-xs text-gray-400">{hint}</p>
+      ) : null}
     </div>
   )
 }

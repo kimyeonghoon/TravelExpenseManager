@@ -35,6 +35,10 @@ const ExpenseCreateModal = ({ isOpen, onClose, onCreated }) => {
       alert('금액은 0 이상의 숫자여야 합니다.')
       return
     }
+    if (Number(form.amount) > 1000000) {
+      const ok = confirm('금액이 1,000,000엔을 초과합니다. 계속하시겠습니까?')
+      if (!ok) return
+    }
     setSubmitting(true)
     try {
       const payload = {
@@ -79,7 +83,8 @@ const ExpenseCreateModal = ({ isOpen, onClose, onCreated }) => {
             </div>
             <div>
               <label className="block text-sm text-gray-700 mb-1">금액(¥)</label>
-              <input type="number" name="amount" value={form.amount} onChange={handleChange} min="0" required className="input-field w-full" />
+              <input type="number" name="amount" value={form.amount} onChange={handleChange} min="0" className="input-field w-full" />
+              <p className="text-xs text-gray-400">0 이상, 1,000,000 초과 시 경고</p>
             </div>
           </div>
 

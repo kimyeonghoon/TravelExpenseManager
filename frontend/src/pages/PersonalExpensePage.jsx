@@ -1,11 +1,18 @@
 import React from 'react'
 import { useAuth } from '../contexts/AuthContext'
 import ExpenseTable from '../components/ExpenseTable'
+import ExpenseCreateModal from '../components/ExpenseCreateModal'
+import { useState } from 'react'
 import Button from '../components/ui/Button'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 
 const PersonalExpensePage = () => {
   const { user, loading } = useAuth()
+  const [openCreate, setOpenCreate] = useState(false)
+  const [refreshKey, setRefreshKey] = useState(0)
+  const handleCreated = () => {
+    setRefreshKey((k) => k + 1)
+  }
 
   if (loading) {
     return <LoadingSpinner size="lg" text="사용자 정보를 불러오는 중..." />
@@ -63,7 +70,7 @@ const PersonalExpensePage = () => {
             개인 지출 내역
           </h3>
           <div className="flex space-x-2">
-            <Button size="sm" variant="primary">
+            <Button size="sm" variant="primary" onClick={() => setOpenCreate(true)}>
               새 지출 등록
             </Button>
             <Button size="sm" variant="outline">
@@ -72,7 +79,7 @@ const PersonalExpensePage = () => {
           </div>
         </div>
         
-        <ExpenseTable type="personal" />
+        <ExpenseTable type="personal" refreshKey={refreshKey} />
       </div>
 
       {/* 공개 설정 */}
@@ -111,6 +118,7 @@ const PersonalExpensePage = () => {
         </div>
       </div>
     </div>
+    <ExpenseCreateModal isOpen={openCreate} onClose={() => setOpenCreate(false)} onCreated={handleCreated} />
   )
 }
 

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react'
 import { getPublicExpenses, getPersonalExpenses } from '../services/expenseService'
 
-export const useExpenses = (type = 'public') => {
+export const useExpenses = (type = 'public', refreshKey = 0) => {
   const [expenses, setExpenses] = useState([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState(null)
@@ -33,7 +33,7 @@ export const useExpenses = (type = 'public') => {
   // 컴포넌트 마운트 시 데이터 조회
   useEffect(() => {
     fetchExpenses()
-  }, [fetchExpenses])
+  }, [fetchExpenses, refreshKey])
 
   // 데이터 새로고침
   const refreshExpenses = useCallback(() => {

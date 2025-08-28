@@ -3,8 +3,8 @@ import { useExpenses } from '../hooks/useExpenses'
 import LoadingSpinner from './ui/LoadingSpinner'
 import ErrorMessage from './ui/ErrorMessage'
 
-const ExpenseTable = ({ type = 'public' }) => {
-  const { expenses, loading, error, refreshExpenses } = useExpenses(type)
+const ExpenseTable = ({ type = 'public', refreshKey = 0 }) => {
+  const { expenses, loading, error, refreshExpenses } = useExpenses(type, refreshKey)
 
   // 로딩 상태
   if (loading) {

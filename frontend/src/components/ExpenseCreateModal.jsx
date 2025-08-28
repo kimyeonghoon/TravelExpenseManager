@@ -2,9 +2,11 @@ import React, { useState } from 'react'
 import Button from './ui/Button'
 import Input from './ui/Input'
 import { createExpense, EXPENSE_CATEGORIES, PAYMENT_METHODS } from '../services/expenseService'
-import DatePicker from 'react-datepicker'
+import DatePicker, { registerLocale } from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { toStorageDateString } from '../utils/date'
+import ko from 'date-fns/locale/ko'
+registerLocale('ko', ko)
 
 const ExpenseCreateModal = ({ isOpen, onClose, onCreated }) => {
   const [form, setForm] = useState({
@@ -27,6 +29,10 @@ const ExpenseCreateModal = ({ isOpen, onClose, onCreated }) => {
     e.preventDefault()
     if (!form.category || !form.paymentMethod || !form.amount) {
       alert('카테고리/결제수단/금액을 입력해주세요.')
+      return
+    }
+    if (Number.isNaN(Number(form.amount)) || Number(form.amount) < 0) {
+      alert('금액은 0 이상의 숫자여야 합니다.')
       return
     }
     setSubmitting(true)
@@ -67,6 +73,7 @@ const ExpenseCreateModal = ({ isOpen, onClose, onCreated }) => {
                 showTimeSelect
                 timeIntervals={10}
                 dateFormat="yyyy-MM-dd HH:mm"
+                locale="ko"
                 className="input-field w-full"
               />
             </div>
@@ -99,7 +106,8 @@ const ExpenseCreateModal = ({ isOpen, onClose, onCreated }) => {
 
           <div>
             <label className="block text-sm text-gray-700 mb-1">메모</label>
-            <textarea name="note" value={form.note} onChange={handleChange} rows={3} className="input-field w-full" />
+            <textarea name="note" value={form.note} onChange={handleChange} rows={3} maxLength={200} className="input-field w-full" />
+            <p className="text-xs text-gray-400 text-right">{(form.note || '').length}/200</p>
           </div>
 
           <div className="flex justify-end space-x-2">

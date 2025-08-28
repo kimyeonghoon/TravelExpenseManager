@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react'
 import Button from './ui/Button'
 import { updateExpense, EXPENSE_CATEGORIES, PAYMENT_METHODS } from '../services/expenseService'
-import DatePicker from 'react-datepicker'
+import DatePicker, { registerLocale } from 'react-datepicker'
 import 'react-datepicker/dist/react-datepicker.css'
 import { toStorageDateString } from '../utils/date'
+import ko from 'date-fns/locale/ko'
+registerLocale('ko', ko)
 
 const ExpenseEditModal = ({ isOpen, onClose, expense, onUpdated }) => {
   const [form, setForm] = useState({
@@ -96,7 +98,8 @@ const ExpenseEditModal = ({ isOpen, onClose, expense, onUpdated }) => {
             </div>
             <div>
               <label className="block text-sm text-gray-700 mb-1">메모</label>
-              <input type="text" name="note" value={form.note} onChange={handleChange} className="input-field w-full" />
+              <input type="text" name="note" value={form.note} onChange={handleChange} maxLength={200} className="input-field w-full" />
+              <p className="text-xs text-gray-400 text-right">{(form.note || '').length}/200</p>
             </div>
           </div>
 

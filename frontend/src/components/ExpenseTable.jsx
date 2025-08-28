@@ -6,6 +6,7 @@ import { updateExpense, deleteExpense } from '../services/expenseService'
 import ExpenseEditModal from './ExpenseEditModal'
 import { useState } from 'react'
 import { buildCsv, downloadCsv } from '../utils/csv'
+import { useToast } from '../contexts/ToastContext'
 
 // 내부 컴포넌트: window 이벤트를 통해 상위 페이지 버튼과 브릿지
 const EventBridge = ({ onExport }) => {
@@ -22,6 +23,7 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0, filters, pageSize = 10,
   // 모든 훅은 조건문/조기 반환보다 먼저 호출되어야 함
   const [editTarget, setEditTarget] = useState(null)
   const [page, setPage] = useState(initialPage)
+  const { show } = useToast()
 
   const handleQuickEditNote = async (expense) => {
     const next = window.prompt('비고를 수정하세요', expense.note || '')
@@ -29,8 +31,9 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0, filters, pageSize = 10,
     try {
       await updateExpense(expense.id, { note: next })
       await refreshExpenses()
+      show('메모가 수정되었습니다.', { type: 'success' })
     } catch (e) {
-      alert('수정 실패: ' + (e.message || '알 수 없는 오류'))
+      show('수정 실패: ' + (e.message || '알 수 없는 오류'), { type: 'error' })
     }
   }
 
@@ -40,8 +43,9 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0, filters, pageSize = 10,
     try {
       await deleteExpense(expense.id)
       await refreshExpenses()
+      show('항목이 삭제되었습니다.', { type: 'success' })
     } catch (e) {
-      alert('삭제 실패: ' + (e.message || '알 수 없는 오류'))
+      show('삭제 실패: ' + (e.message || '알 수 없는 오류'), { type: 'error' })
     }
   }
 

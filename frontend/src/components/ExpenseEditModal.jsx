@@ -6,8 +6,10 @@ import 'react-datepicker/dist/react-datepicker.css'
 import { toStorageDateString } from '../utils/date'
 import ko from 'date-fns/locale/ko'
 registerLocale('ko', ko)
+import { useToast } from '../contexts/ToastContext'
 
 const ExpenseEditModal = ({ isOpen, onClose, expense, onUpdated }) => {
+  const { show } = useToast()
   const [form, setForm] = useState({
     category: '',
     amount: '',
@@ -45,11 +47,12 @@ const ExpenseEditModal = ({ isOpen, onClose, expense, onUpdated }) => {
         note: form.note,
       }
       await updateExpense(expense.id, payload)
+      show('지출이 수정되었습니다.', { type: 'success' })
       onUpdated?.()
       onClose()
     } catch (err) {
       console.error('지출 수정 실패:', err)
-      alert('지출 수정 실패: ' + (err.message || '알 수 없는 오류'))
+      show('지출 수정 실패: ' + (err.message || '알 수 없는 오류'), { type: 'error', duration: 3500 })
     } finally {
       setSubmitting(false)
     }

@@ -6,7 +6,7 @@ import { updateExpense, deleteExpense } from '../services/expenseService'
 import ExpenseEditModal from './ExpenseEditModal'
 import { useState } from 'react'
 
-const ExpenseTable = ({ type = 'public', refreshKey = 0 }) => {
+const ExpenseTable = ({ type = 'public', refreshKey = 0, filters }) => {
   const { expenses, loading, error, refreshExpenses } = useExpenses(type, refreshKey)
   // 모든 훅은 조건문/조기 반환보다 먼저 호출되어야 함
   const [editTarget, setEditTarget] = useState(null)
@@ -49,8 +49,44 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0 }) => {
     )
   }
 
+  // 필터/정렬 적용
+  const applyFilters = (list) => {
+    let data = [...list]
+    if (filters) {
+      const { category, paymentMethod, minAmount, maxAmount, search, sortKey = 'date', sortDir = 'asc' } = filters
+      if (category) data = data.filter((e) => e.category === category)
+      if (paymentMethod) data = data.filter((e) => e.paymentMethod === paymentMethod)
+      if (minAmount) data = data.filter((e) => Number(e.amount) >= Number(minAmount))
+      if (maxAmount) data = data.filter((e) => Number(e.amount) <= Number(maxAmount))
+      if (search) {
+        const q = search.toLowerCase()
+        data = data.filter((e) =>
+          (e.note || '').toLowerCase().includes(q) ||
+          (e.category || '').toLowerCase().includes(q) ||
+          (e.paymentMethod || '').toLowerCase().includes(q)
+        )
+      }
+      data.sort((a, b) => {
+        let A = a[sortKey]
+        let B = b[sortKey]
+        if (sortKey === 'date') {
+          A = new Date(a.date).getTime(); B = new Date(b.date).getTime()
+        }
+        if (sortKey === 'amount') {
+          A = Number(a.amount); B = Number(b.amount)
+        }
+        if (A < B) return sortDir === 'asc' ? -1 : 1
+        if (A > B) return sortDir === 'asc' ? 1 : -1
+        return 0
+      })
+    }
+    return data
+  }
+
+  const shown = applyFilters(expenses || [])
+
   // 데이터가 없는 경우
-  if (!expenses || expenses.length === 0) {
+  if (!shown || shown.length === 0) {
     return (
       <div className="text-center py-8">
         <div className="text-gray-400 text-lg mb-2">📝</div>
@@ -63,7 +99,7 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0 }) => {
     <div className="space-y-4">
       {/* 모바일용 카드 뷰 */}
       <div className="block sm:hidden space-y-3">
-        {expenses.map((expense) => (
+        {shown.map((expense) => (
           <div key={expense.id} className="bg-white border border-gray-200 rounded-lg p-4 space-y-2">
             <div className="flex justify-between items-start">
               <div className="flex-1">
@@ -121,7 +157,7 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0 }) => {
             </tr>
           </thead>
           <tbody className="bg-white divide-y divide-gray-200">
-            {expenses.map((expense) => (
+            {shown.map((expense) => (
               <tr key={expense.id} className="hover:bg-gray-50">
                 <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
                   {expense.date}

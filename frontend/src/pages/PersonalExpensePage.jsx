@@ -4,14 +4,31 @@ import ExpenseTable from '../components/ExpenseTable'
 import ExpenseCreateModal from '../components/ExpenseCreateModal'
 import { useState } from 'react'
 import Button from '../components/ui/Button'
+import { EXPENSE_CATEGORIES, PAYMENT_METHODS } from '../services/expenseService'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
 
 const PersonalExpensePage = () => {
   const { user, loading } = useAuth()
   const [openCreate, setOpenCreate] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
+  const [filters, setFilters] = useState({
+    category: '',
+    paymentMethod: '',
+    minAmount: '',
+    maxAmount: '',
+    search: '',
+    sortKey: 'date',
+    sortDir: 'asc',
+  })
   const handleCreated = () => {
     setRefreshKey((k) => k + 1)
+  }
+  const handleFilterChange = (e) => {
+    const { name, value } = e.target
+    setFilters((prev) => ({ ...prev, [name]: value }))
+  }
+  const resetFilters = () => {
+    setFilters({ category: '', paymentMethod: '', minAmount: '', maxAmount: '', search: '', sortKey: 'date', sortDir: 'asc' })
   }
 
   if (loading) {
@@ -79,8 +96,45 @@ const PersonalExpensePage = () => {
             </Button>
           </div>
         </div>
+
+        {/* 필터/정렬 바 */}
+        <div className="grid grid-cols-1 sm:grid-cols-6 gap-3 mb-4">
+          <input name="search" value={filters.search} onChange={handleFilterChange} placeholder="메모/카테고리/결제 검색" className="input-field w-full sm:col-span-2" />
+          <select name="category" value={filters.category} onChange={handleFilterChange} className="input-field w-full">
+            <option value="">전체 카테고리</option>
+            {Object.values(EXPENSE_CATEGORIES).map((c) => (
+              <option key={c} value={c}>{c}</option>
+            ))}
+          </select>
+          <select name="paymentMethod" value={filters.paymentMethod} onChange={handleFilterChange} className="input-field w-full">
+            <option value="">전체 결제수단</option>
+            {Object.values(PAYMENT_METHODS).map((m) => (
+              <option key={m} value={m}>{m}</option>
+            ))}
+          </select>
+          <input type="number" name="minAmount" value={filters.minAmount} onChange={handleFilterChange} placeholder="최소 금액" className="input-field w-full" />
+          <input type="number" name="maxAmount" value={filters.maxAmount} onChange={handleFilterChange} placeholder="최대 금액" className="input-field w-full" />
+        </div>
+
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
+          <div className="flex items-center space-x-2">
+            <label className="text-sm text-gray-600">정렬:</label>
+            <select name="sortKey" value={filters.sortKey} onChange={handleFilterChange} className="input-field">
+              <option value="date">날짜</option>
+              <option value="amount">금액</option>
+              <option value="category">카테고리</option>
+            </select>
+            <select name="sortDir" value={filters.sortDir} onChange={handleFilterChange} className="input-field">
+              <option value="asc">오름차순</option>
+              <option value="desc">내림차순</option>
+            </select>
+          </div>
+          <div className="flex space-x-2">
+            <Button size="sm" variant="secondary" onClick={resetFilters}>필터 초기화</Button>
+          </div>
+        </div>
         
-        <ExpenseTable type="personal" refreshKey={refreshKey} />
+        <ExpenseTable type="personal" refreshKey={refreshKey} filters={filters} />
       </div>
 
       {/* 공개 설정 */}

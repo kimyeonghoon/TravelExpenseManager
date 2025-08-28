@@ -8,7 +8,8 @@ const USE_MOCK_DATA = import.meta.env.DEV
 export const requestEmailVerification = async (email) => {
   if (USE_MOCK_DATA) {
     // 개발 모드에서는 모킹 응답 (1초 후 성공)
-    return mockApiResponse({ message: '인증 코드가 이메일로 전송되었습니다.' }, 1000)
+    const response = await mockApiResponse({ message: '인증 코드가 이메일로 전송되었습니다.' }, 1000)
+    return response.data
   }
 
   try {
@@ -34,13 +35,14 @@ export const verifyEmailCode = async (email, code) => {
         created_at: new Date().toISOString()
       }
       
-      return mockApiResponse({
+      const response = await mockApiResponse({
         access_token: mockToken,
         token_type: 'bearer',
         user: mockUser
       }, 1000)
+      return response.data
     } else {
-      return mockApiError('잘못된 인증 코드입니다.', 1000)
+      throw await mockApiError('잘못된 인증 코드입니다.', 1000)
     }
   }
 
@@ -79,7 +81,8 @@ export const getCurrentUser = async () => {
       name: '테스트 사용자',
       created_at: new Date().toISOString()
     }
-    return mockApiResponse(mockUser, 500)
+    const response = await mockApiResponse(mockUser, 500)
+    return response.data
   }
 
   try {
@@ -96,10 +99,11 @@ export const refreshToken = async () => {
   if (USE_MOCK_DATA) {
     // 개발 모드에서는 모킹 토큰 갱신
     const mockToken = 'mock_jwt_token_refreshed_' + Date.now()
-    return mockApiResponse({
+    const response = await mockApiResponse({
       access_token: mockToken,
       token_type: 'bearer'
     }, 500)
+    return response.data
   }
 
   try {

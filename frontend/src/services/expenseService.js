@@ -41,6 +41,11 @@ export const getPublicExpenses = async () => {
 
 // 개인 지출 내역 조회
 export const getPersonalExpenses = async () => {
+  if (USE_MOCK_DATA) {
+    // 개발 모드: 로그인 사용자의 개인 지출이라고 가정하고 mockExpenses 재활용
+    const response = await mockApiResponse(mockExpenses, 600)
+    return response.data
+  }
   try {
     const response = await api.get('/api/expenses/')
     return response.data

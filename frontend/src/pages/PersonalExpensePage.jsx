@@ -92,7 +92,10 @@ const PersonalExpensePage = () => {
             <Button size="sm" variant="primary" onClick={() => setOpenCreate(true)}>
               새 지출 등록
             </Button>
-            <Button size="sm" variant="outline">
+            <Button size="sm" variant="outline" onClick={(e)=>{
+              const event = new CustomEvent('expense:export')
+              window.dispatchEvent(event)
+            }}>
               내보내기
             </Button>
           </div>

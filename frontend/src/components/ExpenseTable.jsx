@@ -5,6 +5,17 @@ import ErrorMessage from './ui/ErrorMessage'
 import { updateExpense, deleteExpense } from '../services/expenseService'
 import ExpenseEditModal from './ExpenseEditModal'
 import { useState } from 'react'
+import { buildCsv, downloadCsv } from '../utils/csv'
+
+// 내부 컴포넌트: window 이벤트를 통해 상위 페이지 버튼과 브릿지
+const EventBridge = ({ onExport }) => {
+  React.useEffect(() => {
+    const handler = () => onExport?.()
+    window.addEventListener('expense:export', handler)
+    return () => window.removeEventListener('expense:export', handler)
+  }, [onExport])
+  return null
+}
 
 const ExpenseTable = ({ type = 'public', refreshKey = 0, filters, pageSize = 10, initialPage = 1, onPageChange }) => {
   const { expenses, loading, error, refreshExpenses } = useExpenses(type, refreshKey)
@@ -98,6 +109,19 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0, filters, pageSize = 10,
     onPageChange?.(np)
   }
 
+  const exportCsv = () => {
+    const rows = shown.map((e) => ({
+      date: e.date,
+      category: e.category,
+      amount: e.amount,
+      paymentMethod: e.paymentMethod,
+      note: e.note || '',
+    }))
+    const csv = buildCsv(rows, ['date', 'category', 'amount', 'paymentMethod', 'note'])
+    const filename = type === 'personal' ? 'personal_expenses.csv' : 'public_expenses.csv'
+    downloadCsv(filename, csv)
+  }
+
   // 데이터가 없는 경우
   if (!shown || shown.length === 0) {
     return (
@@ -110,6 +134,10 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0, filters, pageSize = 10,
 
   return (
     <div className="space-y-4">
+      {/* 내보내기 이벤트 리스너 (Personal 페이지 버튼과 연결) */}
+      {type === 'personal' && (
+        <EventBridge onExport={exportCsv} />
+      )}
       {/* 모바일용 카드 뷰 */}
       <div className="block sm:hidden space-y-3">
         {pageItems.map((expense) => (

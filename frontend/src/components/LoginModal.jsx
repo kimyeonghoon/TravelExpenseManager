@@ -1,42 +1,73 @@
 import React, { useState } from 'react'
+import { useAuth } from '../contexts/AuthContext'
+import Button from './ui/Button'
+import Input from './ui/Input'
+import LoadingSpinner from './ui/LoadingSpinner'
+import ErrorMessage from './ui/ErrorMessage'
 
-const LoginModal = ({ isOpen, onClose, onLogin }) => {
+const LoginModal = ({ isOpen, onClose }) => {
+  const { requestVerification, login, error, clearError } = useAuth()
   const [step, setStep] = useState(1) // 1: 이메일 입력, 2: 인증코드 입력
   const [email, setEmail] = useState('')
   const [verificationCode, setVerificationCode] = useState('')
   const [isLoading, setIsLoading] = useState(false)
+  const [emailSent, setEmailSent] = useState(false)
 
   if (!isOpen) return null
 
   const handleEmailSubmit = async (e) => {
     e.preventDefault()
-    if (!email) return
+    if (!email.trim()) return
     
     setIsLoading(true)
-    // TODO: Phase 3에서 실제 API 연동 구현
-    setTimeout(() => {
-      setIsLoading(false)
+    clearError()
+    
+    try {
+      await requestVerification(email.trim())
+      setEmailSent(true)
       setStep(2)
-    }, 1000)
+    } catch (err) {
+      // 에러는 AuthContext에서 처리됨
+      console.error('이메일 인증 코드 요청 실패:', err)
+    } finally {
+      setIsLoading(false)
+    }
   }
 
   const handleVerificationSubmit = async (e) => {
     e.preventDefault()
-    if (!verificationCode) return
+    if (!verificationCode.trim()) return
     
     setIsLoading(true)
-    // TODO: Phase 3에서 실제 API 연동 구현
-    setTimeout(() => {
+    clearError()
+    
+    try {
+      await login(email.trim(), verificationCode.trim())
+      onClose()
+      // 로그인 성공 시 모달 닫기
+    } catch (err) {
+      // 에러는 AuthContext에서 처리됨
+      console.error('인증 코드 확인 실패:', err)
+    } finally {
       setIsLoading(false)
-      onLogin({ email, nickname: email.split('@')[0] })
-    }, 1000)
+    }
   }
 
   const handleClose = () => {
     setStep(1)
     setEmail('')
     setVerificationCode('')
+    setEmailSent(false)
+    setIsLoading(false)
+    clearError()
     onClose()
+  }
+
+  const handleBackToEmail = () => {
+    setStep(1)
+    setVerificationCode('')
+    setEmailSent(false)
+    clearError()
   }
 
   return (
@@ -53,6 +84,16 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
             ×
           </button>
         </div>
+
+        {/* 에러 메시지 표시 */}
+        {error && (
+          <ErrorMessage 
+            error={error} 
+            onRetry={clearError}
+            title="인증 오류"
+            className="mb-4"
+          />
+        )}
 
         {step === 1 ? (
           <form onSubmit={handleEmailSubmit} className="space-y-4">
@@ -104,7 +145,7 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
             </button>
             <button
               type="button"
-              onClick={() => setStep(1)}
+              onClick={handleBackToEmail}
               className="w-full btn-secondary"
             >
               이메일 다시 입력
@@ -113,10 +154,10 @@ const LoginModal = ({ isOpen, onClose, onLogin }) => {
         )}
 
         {/* 테스트용 안내 메시지 */}
-        <div className="mt-6 p-3 bg-yellow-50 border border-yellow-200 rounded-lg">
-          <p className="text-xs text-yellow-800">
-            🧪 <strong>테스트 모드</strong> - 실제 인증 없이 로그인됩니다.
-            Phase 3에서 실제 이메일 인증이 구현될 예정입니다.
+        <div className="mt-6 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+          <p className="text-xs text-blue-800">
+            🧪 <strong>테스트 모드</strong> - 인증 코드 '123456'을 입력하면 로그인됩니다.
+            Phase 4에서 실제 이메일 인증이 구현될 예정입니다.
           </p>
         </div>
       </div>

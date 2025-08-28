@@ -1,18 +1,31 @@
 import React from 'react'
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom'
+import { AuthProvider } from './contexts/AuthContext'
 import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
+import PersonalExpensePage from './pages/PersonalExpensePage'
+import ProtectedRoute from './components/ProtectedRoute'
 import './App.css'
 
 function App() {
   return (
-    <Router>
-      <Layout>
-        <Routes>
-          <Route path="/" element={<HomePage />} />
-        </Routes>
-      </Layout>
-    </Router>
+    <AuthProvider>
+      <Router>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<HomePage />} />
+            <Route 
+              path="/personal" 
+              element={
+                <ProtectedRoute>
+                  <PersonalExpensePage />
+                </ProtectedRoute>
+              } 
+            />
+          </Routes>
+        </Layout>
+      </Router>
+    </AuthProvider>
   )
 }
 

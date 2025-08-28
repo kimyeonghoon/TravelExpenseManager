@@ -26,7 +26,8 @@ const USE_MOCK_DATA = import.meta.env.DEV
 export const getPublicExpenses = async () => {
   if (USE_MOCK_DATA) {
     // 개발 모드에서는 모킹 데이터 반환
-    return mockApiResponse(mockExpenses, 800)
+    const response = await mockApiResponse(mockExpenses, 800)
+    return response.data
   }
   
   try {

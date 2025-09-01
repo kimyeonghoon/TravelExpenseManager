@@ -72,4 +72,48 @@ htmlcov/
 # Temporary files
 *.tmp
 *.temp
-# Git Setup Complete
+
+# Claude AI
+.claude/
+.claude/settings.local.json
+
+# Package manager
+package-lock.json
+yarn.lock
+
+# Frontend specific
+frontend/.env
+frontend/.env.local
+frontend/.env.development.local
+frontend/.env.test.local
+frontend/.env.production.local
+frontend/dist/
+frontend/build/
+
+# Backend specific  
+backend/.env
+backend/__pycache__/
+backend/*.db
+backend/*.sqlite3
+backend/alembic/versions/*.py
+!backend/alembic/versions/__init__.py
+
+# Testing
+*.test.js
+*.test.jsx
+*.test.ts
+*.test.tsx
+jest/
+cypress/
+
+# Security
+*.key
+*.pem
+*.crt
+*.p12
+*.pfx
+
+# Editor
+.vscode/settings.json
+.vscode/launch.json
+.vscode/extensions.json

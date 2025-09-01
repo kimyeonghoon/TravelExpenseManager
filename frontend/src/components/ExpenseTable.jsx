@@ -20,8 +20,8 @@ const EventBridge = ({ onExport }) => {
 }
 
 const ExpenseTable = ({ type = 'public', refreshKey = 0, filters, pageSize = 10, initialPage = 1, onPageChange }) => {
-  const { expenses, loading, error, refreshExpenses } = useExpenses(type, refreshKey)
   // 모든 훅은 조건문/조기 반환보다 먼저 호출되어야 함
+  const { expenses, loading, error, refreshExpenses } = useExpenses(type, refreshKey)
   const [editTarget, setEditTarget] = useState(null)
   const [page, setPage] = useState(initialPage)
   const { show } = useToast()
@@ -50,64 +50,41 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0, filters, pageSize = 10,
     }
   }, [show, refreshExpenses])
 
-  // 로딩 상태 - 스켈레톤 UI 사용
-  if (loading) {
-    return (
-      <div className="space-y-4">
-        <div className="flex justify-between items-center">
-          <div className="text-sm text-gray-500">지출 내역을 불러오는 중...</div>
-        </div>
-        <TableSkeleton rows={pageSize || 10} />
-      </div>
-    )
-  }
-
-  // 에러 상태
-  if (error) {
-    return (
-      <ErrorMessage 
-        error={error} 
-        onRetry={refreshExpenses}
-        title="지출 내역을 불러올 수 없습니다"
-      />
-    )
-  }
-
-  // 필터/정렬 적용 - 메모이제이션으로 성능 최적화
+  // 필터/정렬 적용 - 메모이제이션으로 성능 최적화 (조건부 반환 전에 위치)
   const filteredAndSortedExpenses = useMemo(() => {
     if (!expenses) return []
     
     const applyFilters = (list) => {
-    let data = [...list]
-    if (filters) {
-      const { category, paymentMethod, minAmount, maxAmount, search, sortKey = 'date', sortDir = 'asc' } = filters
-      if (category) data = data.filter((e) => e.category === category)
-      if (paymentMethod) data = data.filter((e) => e.paymentMethod === paymentMethod)
-      if (minAmount) data = data.filter((e) => Number(e.amount) >= Number(minAmount))
-      if (maxAmount) data = data.filter((e) => Number(e.amount) <= Number(maxAmount))
-      if (search) {
-        const q = search.toLowerCase()
-        data = data.filter((e) =>
-          (e.note || '').toLowerCase().includes(q) ||
-          (e.category || '').toLowerCase().includes(q) ||
-          (e.paymentMethod || '').toLowerCase().includes(q)
-        )
+      let data = [...list]
+      if (filters) {
+        const { category, paymentMethod, minAmount, maxAmount, search, sortKey = 'date', sortDir = 'asc' } = filters
+        if (category) data = data.filter((e) => e.category === category)
+        if (paymentMethod) data = data.filter((e) => e.paymentMethod === paymentMethod)
+        if (minAmount) data = data.filter((e) => Number(e.amount) >= Number(minAmount))
+        if (maxAmount) data = data.filter((e) => Number(e.amount) <= Number(maxAmount))
+        if (search) {
+          const q = search.toLowerCase()
+          data = data.filter((e) =>
+            (e.note || '').toLowerCase().includes(q) ||
+            (e.category || '').toLowerCase().includes(q) ||
+            (e.paymentMethod || '').toLowerCase().includes(q)
+          )
+        }
+        data.sort((a, b) => {
+          let A = a[sortKey]
+          let B = b[sortKey]
+          if (sortKey === 'date') {
+            A = new Date(a.date).getTime(); B = new Date(b.date).getTime()
+          }
+          if (sortKey === 'amount') {
+            A = Number(a.amount); B = Number(b.amount)
+          }
+          if (A < B) return sortDir === 'asc' ? -1 : 1
+          if (A > B) return sortDir === 'asc' ? 1 : -1
+          return 0
+        })
       }
-      data.sort((a, b) => {
-        let A = a[sortKey]
-        let B = b[sortKey]
-        if (sortKey === 'date') {
-          A = new Date(a.date).getTime(); B = new Date(b.date).getTime()
-        }
-        if (sortKey === 'amount') {
-          A = Number(a.amount); B = Number(b.amount)
-        }
-        if (A < B) return sortDir === 'asc' ? -1 : 1
-        if (A > B) return sortDir === 'asc' ? 1 : -1
-        return 0
-      })
-    }
-    return data
+      return data
     }
     
     return applyFilters(expenses)
@@ -138,6 +115,29 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0, filters, pageSize = 10,
     const csv = buildCsv(rows, ['date', 'category', 'amount', 'paymentMethod', 'note'])
     const filename = type === 'personal' ? 'personal_expenses.csv' : 'public_expenses.csv'
     downloadCsv(filename, csv)
+  }
+
+  // 로딩 상태 - 스켈레톤 UI 사용
+  if (loading) {
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <div className="text-sm text-gray-500">지출 내역을 불러오는 중...</div>
+        </div>
+        <TableSkeleton rows={pageSize || 10} />
+      </div>
+    )
+  }
+
+  // 에러 상태
+  if (error) {
+    return (
+      <ErrorMessage 
+        error={error} 
+        onRetry={refreshExpenses}
+        title="지출 내역을 불러올 수 없습니다"
+      />
+    )
   }
 
   // 데이터가 없는 경우

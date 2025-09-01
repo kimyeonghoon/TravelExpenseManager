@@ -8,6 +8,7 @@ import { toStorageDateString } from '../utils/date'
 import ko from 'date-fns/locale/ko'
 registerLocale('ko', ko)
 import { useToast } from '../contexts/ToastContext'
+import { validateExpenseData } from '../utils/validation'
 
 const ExpenseCreateModal = ({ isOpen, onClose, onCreated }) => {
   const { show } = useToast()
@@ -19,6 +20,7 @@ const ExpenseCreateModal = ({ isOpen, onClose, onCreated }) => {
     note: ''
   })
   const [submitting, setSubmitting] = useState(false)
+  const [validationErrors, setValidationErrors] = useState({})
 
   if (!isOpen) return null
 
@@ -29,29 +31,48 @@ const ExpenseCreateModal = ({ isOpen, onClose, onCreated }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault()
-    if (!form.category || !form.paymentMethod || !form.amount) {
-      alert('카테고리/결제수단/금액을 입력해주세요.')
+    setValidationErrors({})
+    
+    // 클라이언트 측 검증
+    const payload = {
+      date: toStorageDateString(form.date),
+      category: form.category,
+      amount: form.amount,
+      paymentMethod: form.paymentMethod,
+      note: form.note,
+    }
+    
+    const validation = validateExpenseData(payload)
+    
+    if (!validation.isValid) {
+      setValidationErrors(validation.errors)
+      show('입력 정보를 확인해주세요.', { type: 'error' })
       return
     }
-    if (Number.isNaN(Number(form.amount)) || Number(form.amount) < 0) {
-      alert('금액은 0 이상의 숫자여야 합니다.')
-      return
-    }
+    
+    // 큰 금액 경고
     if (Number(form.amount) > 1000000) {
       const ok = confirm('금액이 1,000,000엔을 초과합니다. 계속하시겠습니까?')
       if (!ok) return
     }
+    
     setSubmitting(true)
     try {
-      const payload = {
-        date: toStorageDateString(form.date),
-        category: form.category,
-        amount: Number(form.amount),
-        paymentMethod: form.paymentMethod,
-        note: form.note,
-      }
-      await createExpense(payload)
+      await createExpense({
+        ...validation.sanitizedData,
+        amount: Number(validation.sanitizedData.amount)
+      })
       show('지출이 등록되었습니다.', { type: 'success' })
+      
+      // 폼 초기화
+      setForm({
+        date: new Date(),
+        category: '',
+        amount: '',
+        paymentMethod: '',
+        note: ''
+      })
+      
       onCreated?.()
       onClose()
     } catch (err) {

@@ -63,11 +63,23 @@ const ExpenseCreateModal = ({ isOpen, onClose, onCreated }) => {
   }
 
   return (
-    <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4">
+    <div 
+      className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50 p-4"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="create-expense-title"
+    >
       <div className="bg-white rounded-lg p-4 sm:p-6 w-full max-w-lg">
         <div className="flex justify-between items-center mb-4">
-          <h3 className="text-lg sm:text-xl font-semibold">새 지출 등록</h3>
-          <button onClick={onClose} className="text-gray-500 hover:text-gray-700">×</button>
+          <h3 id="create-expense-title" className="text-lg sm:text-xl font-semibold">새 지출 등록</h3>
+          <button 
+            onClick={onClose} 
+            className="text-gray-500 hover:text-gray-700"
+            aria-label="모달 닫기"
+            type="button"
+          >
+            ×
+          </button>
         </div>
 
         <form onSubmit={handleSubmit} className="space-y-4">

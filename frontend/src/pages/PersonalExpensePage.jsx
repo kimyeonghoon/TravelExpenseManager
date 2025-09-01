@@ -6,9 +6,12 @@ import { useState } from 'react'
 import Button from '../components/ui/Button'
 import { EXPENSE_CATEGORIES, PAYMENT_METHODS } from '../services/expenseService'
 import LoadingSpinner from '../components/ui/LoadingSpinner'
+import useKeyboardShortcuts from '../hooks/useKeyboardShortcuts'
+import { useToast } from '../contexts/ToastContext'
 
 const PersonalExpensePage = () => {
   const { user, loading } = useAuth()
+  const { show } = useToast()
   const [openCreate, setOpenCreate] = useState(false)
   const [refreshKey, setRefreshKey] = useState(0)
   const [filters, setFilters] = useState({
@@ -21,6 +24,29 @@ const PersonalExpensePage = () => {
     sortDir: 'asc',
   })
   const [pageSize, setPageSize] = useState(10)
+  
+  // 키보드 단축키 설정
+  useKeyboardShortcuts({
+    'ctrl+n': () => {
+      setOpenCreate(true)
+      show('새 지출 등록 모달이 열렸습니다. (Ctrl+N)', { type: 'info', duration: 2000 })
+    },
+    'ctrl+e': () => {
+      const event = new CustomEvent('expense:export')
+      window.dispatchEvent(event)
+      show('CSV 내보내기를 시작합니다. (Ctrl+E)', { type: 'info', duration: 2000 })
+    },
+    'ctrl+r': () => {
+      setRefreshKey(k => k + 1)
+      show('데이터를 새로고침합니다. (Ctrl+R)', { type: 'info', duration: 2000 })
+    },
+    'esc': () => {
+      if (openCreate) {
+        setOpenCreate(false)
+        show('모달이 닫혔습니다. (Esc)', { type: 'info', duration: 1500 })
+      }
+    }
+  })
   const handleCreated = () => {
     setRefreshKey((k) => k + 1)
   }
@@ -89,13 +115,13 @@ const PersonalExpensePage = () => {
             개인 지출 내역
           </h3>
           <div className="flex space-x-2">
-            <Button size="sm" variant="primary" onClick={() => setOpenCreate(true)}>
+            <Button size="sm" variant="primary" onClick={() => setOpenCreate(true)} title="단축키: Ctrl+N">
               새 지출 등록
             </Button>
             <Button size="sm" variant="outline" onClick={(e)=>{
               const event = new CustomEvent('expense:export')
               window.dispatchEvent(event)
-            }}>
+            }} title="단축키: Ctrl+E">
               내보내기
             </Button>
           </div>

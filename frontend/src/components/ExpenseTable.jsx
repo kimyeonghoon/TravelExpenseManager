@@ -1,7 +1,8 @@
-import React from 'react'
+import React, { useMemo, useCallback } from 'react'
 import { useExpenses } from '../hooks/useExpenses'
 import LoadingSpinner from './ui/LoadingSpinner'
 import ErrorMessage from './ui/ErrorMessage'
+import { TableSkeleton } from './ui/Skeleton'
 import { updateExpense, deleteExpense } from '../services/expenseService'
 import ExpenseEditModal from './ExpenseEditModal'
 import { useState } from 'react'
@@ -25,7 +26,7 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0, filters, pageSize = 10,
   const [page, setPage] = useState(initialPage)
   const { show } = useToast()
 
-  const handleQuickEditNote = async (expense) => {
+  const handleQuickEditNote = useCallback(async (expense) => {
     const next = window.prompt('비고를 수정하세요', expense.note || '')
     if (next === null) return
     try {
@@ -35,9 +36,9 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0, filters, pageSize = 10,
     } catch (e) {
       show('수정 실패: ' + (e.message || '알 수 없는 오류'), { type: 'error' })
     }
-  }
+  }, [show, refreshExpenses])
 
-  const handleDelete = async (expense) => {
+  const handleDelete = useCallback(async (expense) => {
     const ok = window.confirm('이 지출을 삭제하시겠습니까? (논리 삭제)')
     if (!ok) return
     try {
@@ -47,11 +48,18 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0, filters, pageSize = 10,
     } catch (e) {
       show('삭제 실패: ' + (e.message || '알 수 없는 오류'), { type: 'error' })
     }
-  }
+  }, [show, refreshExpenses])
 
-  // 로딩 상태
+  // 로딩 상태 - 스켈레톤 UI 사용
   if (loading) {
-    return <LoadingSpinner size="lg" text="지출 내역을 불러오는 중..." />
+    return (
+      <div className="space-y-4">
+        <div className="flex justify-between items-center">
+          <div className="text-sm text-gray-500">지출 내역을 불러오는 중...</div>
+        </div>
+        <TableSkeleton rows={pageSize || 10} />
+      </div>
+    )
   }
 
   // 에러 상태
@@ -65,8 +73,11 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0, filters, pageSize = 10,
     )
   }
 
-  // 필터/정렬 적용
-  const applyFilters = (list) => {
+  // 필터/정렬 적용 - 메모이제이션으로 성능 최적화
+  const filteredAndSortedExpenses = useMemo(() => {
+    if (!expenses) return []
+    
+    const applyFilters = (list) => {
     let data = [...list]
     if (filters) {
       const { category, paymentMethod, minAmount, maxAmount, search, sortKey = 'date', sortDir = 'asc' } = filters
@@ -97,9 +108,12 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0, filters, pageSize = 10,
       })
     }
     return data
-  }
+    }
+    
+    return applyFilters(expenses)
+  }, [expenses, filters])
 
-  const shown = applyFilters(expenses || [])
+  const shown = filteredAndSortedExpenses
   const total = shown.length
   const totalPages = Math.max(1, Math.ceil(total / Math.max(1, Number(pageSize))))
   const currentPage = Math.min(page, totalPages)
@@ -273,4 +287,4 @@ const ExpenseTable = ({ type = 'public', refreshKey = 0, filters, pageSize = 10,
   )
 }
 
-export default ExpenseTable
+export default React.memo(ExpenseTable)

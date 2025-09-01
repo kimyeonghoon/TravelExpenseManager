@@ -6,29 +6,32 @@ import Layout from './components/Layout'
 import HomePage from './pages/HomePage'
 import PersonalExpensePage from './pages/PersonalExpensePage'
 import ProtectedRoute from './components/ProtectedRoute'
+import ErrorBoundary from './components/ErrorBoundary'
 import './App.css'
 
 function App() {
   return (
-    <ToastProvider>
-      <AuthProvider>
-        <Router>
-          <Layout>
-            <Routes>
-              <Route path="/" element={<HomePage />} />
-              <Route 
-                path="/personal" 
-                element={
-                  <ProtectedRoute>
-                    <PersonalExpensePage />
-                  </ProtectedRoute>
-                } 
-              />
-            </Routes>
-          </Layout>
-        </Router>
-      </AuthProvider>
-    </ToastProvider>
+    <ErrorBoundary showErrorDetails={import.meta.env.DEV}>
+      <ToastProvider>
+        <AuthProvider>
+          <Router>
+            <Layout>
+              <Routes>
+                <Route path="/" element={<HomePage />} />
+                <Route 
+                  path="/personal" 
+                  element={
+                    <ProtectedRoute>
+                      <PersonalExpensePage />
+                    </ProtectedRoute>
+                  } 
+                />
+              </Routes>
+            </Layout>
+          </Router>
+        </AuthProvider>
+      </ToastProvider>
+    </ErrorBoundary>
   )
 }
 
